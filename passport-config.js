@@ -14,9 +14,7 @@ const strategyOptions = {
   // You can also attach the user object to the request object for later use
   // The user object is stored in the JWT payload
 const jwtStrategy = new JWTStrategy(strategyOptions, (jwtPayload, next) => {
-
-
-  // Example code to get the user from the database
+ // Example code to get the user from the database
   const user = getUserFromDatabase(jwtPayload.userId);
 
   if (user) {
@@ -28,8 +26,22 @@ const jwtStrategy = new JWTStrategy(strategyOptions, (jwtPayload, next) => {
   }
 });
 
+passport.use(jwtStrategy);
+
   const { Strategy, ExtractJwt } = require('passport-jwt');
   const { getUserFromDatabase } = require('./user-db');
     
 
-passport.use(jwtStrategy);
+
+const requireAuth = passport.authenticate('jwt', { session: false });
+
+// This middleware function checks if the user is authenticated
+function isAuthenticated(req, res, next) {
+  requireAuth(req, res, (err) => {
+    if (err) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    // The user is authenticated, continue to the next middleware
+    next();
+  });
+}
